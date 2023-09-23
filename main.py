@@ -2,12 +2,18 @@ import argparse
 import time
 
 import pyautogui as pag
-from random_word import RandomWords
 
-from helpers import findCenterInArea, findImageTimeout
+from helpers import findCenterInArea, findImageTimeout, read_random_lines, typeInUrlBar
 
-r = RandomWords()
-numWords = 35
+NUM_WORDS = 30
+WORDS_FILE_PATH = "/Users/ssarfaraz/coding/personal/edgeRewards/words.txt"
+pag.PAUSE = 0
+WAIT_TIME = 1
+# for notched mac
+URL_X, URL_Y = 300, 55
+# for regular pc
+# urlX, urlY = 300, 30
+
 
 # check if something is defined in args
 # if so, use that as numWords
@@ -22,70 +28,24 @@ parser.add_argument(
 args = parser.parse_args()
 
 if args.numWords:
-    numWords = args.numWords
+    NUM_WORDS = args.numWords
 
-randomWordsList = [r.get_random_word() for i in range(numWords * 2)]
+randomWordsList = read_random_lines(WORDS_FILE_PATH, NUM_WORDS * 2)
 
 # first half for desktop, second half for mobile
-randomWordsDesktop = randomWordsList[:numWords]
-randomWordsMobile = randomWordsList[numWords:]
-
-pag.PAUSE = 0.1
-WAIT_TIME = 1
-
-# for regular pc
-# urlX, urlY = 300, 30
-
-# for notched mac
-urlX, urlY = 300, 55
-
-
-def printRandomWords(words):
-    for idx, word in enumerate(words, start=1):
-        print(f"{idx}. {word}")
-
-
-# give time to switch to browser
-time.sleep(WAIT_TIME)
-
-# click on url bar
-pag.click(x=urlX, y=urlY)
+randomWordsDesktop = randomWordsList[:NUM_WORDS]
+randomWordsMobile = randomWordsList[NUM_WORDS:]
 
 t1 = time.time()
-for idx, word in enumerate(randomWordsDesktop):
-    # get random word from list
-    pag.write(f"[{idx + 1}/{numWords}] - {word}")
-    pag.press("enter")
-
-    # try to find image, if found, continue
-    # findImageTimeout("./name.jpg")
-    findCenterInArea("./desktopSearch.jpg", regionCoords=(210, 157, 104, 53))
-
-    # reset url bar
-    pag.click(x=urlX, y=urlY)
-
+typeInUrlBar(randomWordsDesktop)
 t2 = time.time()
 print(f"Total time for desktop: {t2 - t1}")
 
 # activate phone window
 pag.hotkey("command", "option", "i")
 
-# url bar
-pag.click(x=urlX, y=urlY)
-
 t1 = time.time()
-for idx, word in enumerate(randomWordsMobile):
-    # get random word from list
-    pag.write(f"[{idx + 1}/{numWords}] - {word}")
-    pag.press("enter")
-
-    # try to find image, if found, continue
-    findCenterInArea("./mobileMic.jpg", regionCoords=(576, 208, 50, 65))
-    # findImageTimeout("./mobileMic.jpg")
-
-    # reset url bar
-    pag.click(x=urlX, y=urlY)
-
+typeInUrlBar(randomWordsMobile)
 t2 = time.time()
 print(f"Total time for mobile: {t2 - t1}")
 
@@ -96,7 +56,7 @@ pag.hotkey("command", "w")
 pag.hotkey("command", "t")
 
 # select url bar
-pag.click(x=urlX, y=urlY)
+pag.click(x=URL_X, y=URL_Y)
 
 # go to https://rewards.bing.com/
 pag.write("https://rewards.bing.com/")
